@@ -6,15 +6,6 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
-#define LED_PORT PORTC_OUT
-
-#define GND_PIN 	2	// 2 //key to connect led's ground
-#define DATA_PIN	5	// 0
-#define CLK_PIN		7	// 1
-#define DATA0	0
-#define DATA1	1<<DATA_PIN
-#define CLOCK0	0
-#define CLOCK1	1<<CLK_PIN
 
 #ifndef FRAME_DELAY
 	#define FRAME_DELAY 50
@@ -43,20 +34,6 @@ void sendByte(unsigned char a){
 		LED_PORT=data | CLOCK1 | mask;
 		LED_PORT=data | CLOCK0 | mask;
 	}
-}
-
-void startFrame(){
-	sendByte(0);
-	sendByte(0);
-	sendByte(0);
-	sendByte(0);
-}
-
-void endFrame(){
-	sendByte(255);
-	sendByte(255);
-	sendByte(255);
-	sendByte(255);
 }
 
 void sendRGB( unsigned char r, unsigned char g, unsigned char b ){

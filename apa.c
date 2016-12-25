@@ -1,9 +1,17 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
-#include "apa102-driver-2.c"
+//#include "apa102-driver-2.c"
 #include "palette_7__.c"
 #include <avr/eeprom.h>
+#define LED_PORT PORTC_OUT
+#define GND_PIN 	2	// 2 //key to connect led's ground
+#define DATA_PIN	5	// 0
+#define CLK_PIN		7	// 1
+#define DATA0	0
+#define DATA1	1<<DATA_PIN
+#define CLOCK0	0
+#define CLOCK1	1<<CLK_PIN
 
 #define PACK_SIZE	68
 #define LED_PORT PORTC_OUT
@@ -13,19 +21,9 @@
 #define CLOCK1	1<<CLK_PIN
 #define BUTTON_PIN	PORTE_IN
 #define BUTTON_1	5
-//#define DRRB PORTB_DIR
-//#define PORTB PORTB_OUT
-//#define PINB PORTB_IN
 #define PORT_MASK	((1<<BUTTON_1)+(1<<GND_PIN))
-#define INC_DELAY	10
-#define S_DELAY		100
-#define P_DELAY		500
 #define PRESSED			1
 #define NOT_PRESSED		0
-#define MODE_NUM	12
-#define S_NUM	11
-#define MAX PACK_SIZE
-#define LED_NUM	PACK_SIZE
 
 static char mode;
 
@@ -33,26 +31,74 @@ unsigned char ar[PACK_SIZE];
 unsigned char ag[PACK_SIZE];
 unsigned char ab[PACK_SIZE];
 
+unsigned char START = 0;
+unsigned char END = MAX;
 EEMEM unsigned char	e_mode;
 EEMEM unsigned char	e_serie;
 EEMEM unsigned char	e_s_serie;
 EEMEM unsigned char	e_power;
 
-char dir = 0;
+unsigned char INC_DELAY = 2;
+unsigned char S_DELAY = 20;
+
+void sendByte(unsigned char a){
+	unsigned char i, data, b, mask;
+	//unsigned char mask;
+	mask=LED_PORT & !(1<<DATA_PIN | 1<<CLK_PIN);
+	b=a;
+	for (i=0; i<8; i++){
+		data=DATA0;
+		if (  (b&(1<<(7-i)))>0 ) data=DATA1;
+	
+		LED_PORT=data | CLOCK0 | mask;
+		LED_PORT=data | CLOCK1 | mask;
+		LED_PORT=data | CLOCK0 | mask;
+	}
+}
+
+void delay(int i) //delay proxy function for arduino functions
+{_delay_ms(i*10);}
+
+
 
 void right() //Sets on only USB side of the stick
 {
-	dir = 2;
+	START = MAX/2;
+	END = MAX;
 }
 
 void left() //Sets on only non-USB side of the stick
 {
-	dir = 1;
+	START = 0;
+	END = MAX/2;
 }
  
 void both() //Sets on both sides of the stick
 {
-	dir = 255;
+	START = 0;
+	END = MAX;
+}
+
+void setpixel(int r, int g, int b, int n) //sets pixel n with color (r,g,b). Do not forget to showstrip() after setting all pixels.
+{
+	n = n>MAX?MAX:(n<1?1:n);
+	ar[n-1] = r;
+	ag[n-1] = g;
+	ab[n-1] = b;
+}
+
+void startFrame(){
+	sendByte(0);
+	sendByte(0);
+	sendByte(0);
+	sendByte(0);
+}
+
+void endFrame(){
+	sendByte(255);
+	sendByte(255);
+	sendByte(255);
+	sendByte(255);
 }
 
 void write_w(unsigned char a)
@@ -194,13 +240,7 @@ void write_c_def(int r, int g, int b) // immediately prints a single pixel with 
 	write_w(g);
 	write_w(r);
 }
-void setpixel(int r, int g, int b, int n) //sets pixel n with color (r,g,b). Do not forget to showstrip() after setting all pixels.
-{
-	n = n>MAX?MAX:(n<1?1:n);
-	ar[n-1] = r;
-	ag[n-1] = g;
-	ab[n-1] = b;
-}
+
 
 void drop() //clears LED color array
 {
