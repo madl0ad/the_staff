@@ -1,13 +1,16 @@
 #define SPIMEM   SPIE
 #define   SS_off      PORTE.OUTCLR = PIN4_bm
 #define   SS_on      PORTE.OUTSET = PIN4_bm
+#define COUNT 11492
+#define ADDRESS 0
+
 #include "apa.c"
 #include <avr/io.h>
 #include <math.h>
 #include <util/delay.h>
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>
-
+#include <avr/pgmspace.h>
 
 void write_enable(void);
 void write_byte(uint32_t, unsigned int);
@@ -37,31 +40,6 @@ void write_byte(uint32_t address, unsigned int data)
    SS_on;
 }
 
-void write_many(uint32_t address, unsigned char *array, int count)
-{
-	
-   for(int j = 0; j < (int)(count/256)+1;j++)
-   {
-	SS_off;
-   SPIMEM.DATA = 0x02;
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SPIMEM.DATA = (uint8_t)((address >> 16) & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SPIMEM.DATA = (uint8_t)((address >> 8) & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SPIMEM.DATA = (uint8_t)(address & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-	for(int i = 0; i < 256; i++)
-	  
-	  {
-	  SPIMEM.DATA = *(array + i);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-	  }
-   SS_on;
-   address+=256;
-   }
-}
-
 void erase(uint32_t address)
 {
    SS_off;
@@ -86,7 +64,7 @@ unsigned int read_byte(uint32_t address)
    return  SPIMEM.DATA;
 }
 
-unsigned char arr[11492] = {
+unsigned char arr[11492] PROGMEM = {
 2, 2, 2, 2, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 3, 3, 3, 3, 3, 
 2, 2, 2, 2, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 3, 3, 3, 3, 3, 
 2, 2, 2, 2, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 3, 3, 3, 3, 3, 
@@ -262,15 +240,15 @@ void do_chess ()
 	int i, j;
 	for(i=68; i>0; i--){ //подставить число столбцов!
 		
-		for (j=MAX/2; j>0; j--){
-			setpixel_c(read_byte(i*68+j),j);
+		for (j=MAX*1.5; j>0; j-=3){
+				setpixel(read_byte(ADDRESS + i*68+j),read_byte(ADDRESS + i*68+j+1),read_byte(ADDRESS + i*68+j+2),j);
 		}
 		showstrip();
-		if (i%95 == 0) 
+		if (i%20 == 0) 
 		{
 			if (check_button()==1) return;
 		}
-		_delay_us(50);
+		_delay_ms(10);
 	}
 }
 
@@ -286,7 +264,11 @@ int main (void)
    write_enable();
    erase(0);
    write_enable();
-   write_many(0, arr, 11492);
+   for(int i = 0; i < COUNT; i++)
+   {
+	   write_enable();
+	   write_byte(ADDRESS + i, arr[i]);
+   }
    drop();
    while(1)
    {

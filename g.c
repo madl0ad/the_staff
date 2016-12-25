@@ -30,6 +30,7 @@
 #include "pictures.c"
 
 
+
 int * Wheel(int WheelPos) {
     WheelPos = 255 - WheelPos;
     static int color[3] = {0};
@@ -176,32 +177,30 @@ void rainbow(int wait) {
     }
 }
 
-void goinglight(int speed, int wait, int r, int g, int b)
+void goinglight(int r, int g, int b, int speed, int wait)
 {
-    left();
-    for (int i = MAX ; i >=0; i--)
+    for (int i = 1 ; i <=MAX/2; i++)
     {
-        if (i!=MAX)setpixel(0,0,0,i+1);
+        if (i!=1)setpixel(0,0,0,i-1);
         setpixel(r,g,b,i);
         showstrip();
         _delay_us(speed*100);
     }
-    setpixel(0,0,0,1);
+    setpixel(0,0,0,MAX/2);
     showstrip();
     for (int i =0; i<wait; i++)
     {
         _delay_ms(25);
         if (check_button()==1) return;
     }
-    right();
-    for (int i = 0 ; i <=MAX; i++)
+    for (int i = MAX/2+1 ; i <=MAX; i++)
     {
-        if (i!=0)setpixel(0,0,0,i-1);
+        if (i!=MAX/2+1)setpixel(0,0,0,i-1);
         setpixel(r,g,b,i);
         showstrip();
         _delay_us(speed*100);
     }
-    both();
+	setpixel(0,0,0,MAX);
 }
 
 //Theatre-style crawling lights.
@@ -270,39 +269,21 @@ void theaterChaseRainbow(int wait) {
 // Input a value 0 to 255 to get a color value.
 // The colours are a transition r - g - b - back to r.
 
-void do_chess()
-{
-    drop();
-    int i, j;
-    for (i=56; i>0; i--) {
-
-        for (j=56; j>0; j--) {
-            setpixel_c(chess[(i*56)+j],j+1);
-        }
-        showstrip();
-        if (i%20 == 0)
-        {
-            if (check_button()==1) return;
-        }
-        _delay_us(50);
-    }
-}
-
 void do_pictures(unsigned char *ptr, int size)
 {
     drop();
     int i, j;
     for (i=size; i>0; i--) {
 
-        for (j=57; j>0; j--) {
-            setpixel_c(pgm_read_byte(&(ptr[(i*57)+j])),j);
+        for (j=MAX/2; j>0; j--) {
+            setpixel_c(pgm_read_byte(&(ptr[(i*MAX/2)+j])),j);
         }
         showstrip();
         if (i%20 == 0)
         {
             if (check_button()==1) return;
         }
-        _delay_us(50);
+        _delay_ms(5);
     }
 } 
 
@@ -317,8 +298,8 @@ void colorWipe(int r, int g, int b, int wait) {
 
 void scenario1()
 {
-	for(int i = 1000; i>0; i--)
-		do_chess(); //Шахматы
+	//for(int i = 1000; i>0; i--)
+	//	do_chess(); //Шахматы
 	for(int i = 0; i <8; i++)						//Отсюда идут четверти, отделенные delay(1000);
 	setpixel(255,0,0,i);
 	for(int i = MAX/2; i < MAX/2 + 8; i++)		
@@ -356,8 +337,8 @@ void scenario1()
 void scenario2()
 {
     INC_DELAY = 255;
-    for (int i = 0; i < 3334; i++)
-        do_chess();
+    //for (int i = 0; i < 3334; i++)
+    //    do_chess();
     int cmode = eeprom_read_byte(&e_mode);
     while (cmode == eeprom_read_byte(&e_mode))
         do_pictures(flame, 60);
@@ -368,11 +349,13 @@ int main() {
     init();
     unsigned char i, cmode;
     i = 0;
+	eeprom_write_byte(&e_serie,1);
+	eeprom_write_byte(&e_mode,1);
     while (1) {
-        switch (eeprom_read_byte(&e_mode))
+	switch (eeprom_read_byte(&e_mode))
         {
         case 1:
-            for ( i=0; i<=MAX; i++) {
+            for ( i=1; i<=MAX/2; i++) {
                 setpixel_c(eeprom_read_byte(&e_serie),i);
             }
 			showstrip();
@@ -417,22 +400,22 @@ int main() {
             switch (eeprom_read_byte(&e_serie))
             {
             case 1:
-                do_chess();
-                break;
+                //do_chess();
+                //break;
             case 2: 
-                do_pictures(flame,60);  //60 pixels!
+                do_pictures(flame,42);  //42 pixels!
                 break;
             case 3:
-                do_pictures(batman, 262);  //262 pixels!
+                do_pictures(batman, 156);  //156 pixels!
                 break;
 			case 4:
-				do_pictures(face, 88);   //88 pixels!
+				do_pictures(face, 52);   //52 pixels!
 				break;
 			case 5:
-				do_pictures(leaf, 64);   //64 pixels!
+				do_pictures(leaf, 38);   //38 pixels!
 				break;
 			case 6:
-				do_pictures(volks, 91);   //91 pixels!
+				do_pictures(volks, 54);   //91 pixels!
 				break;
 			case 7:
                 eeprom_write_byte(&e_serie,1);
@@ -477,7 +460,7 @@ int main() {
             case 6:
             case 7:
                 //scenario2();
-                do_pictures(face,88);
+                do_pictures(face,52);
 				break;
             }
             INC_DELAY = 2;
@@ -489,5 +472,5 @@ int main() {
             check_button();
             break;
         }
-    }
+	}
 }

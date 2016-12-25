@@ -33,6 +33,7 @@ unsigned char ab[PACK_SIZE];
 
 unsigned char START = 0;
 unsigned char END = MAX;
+
 EEMEM unsigned char	e_mode;
 EEMEM unsigned char	e_serie;
 EEMEM unsigned char	e_s_serie;
@@ -206,8 +207,31 @@ void setpixel_c(char i, char j)
 				case 19:setpixel(64,255,64,j);	break;
 				case 20:setpixel(64,64,255,j);	break;
 			}
+			switch (i)
+			{
+				case 0:	setpixel(0,0,0,MAX-j);	break;
+				case 1:	setpixel(255,0,0,MAX-j);	break;
+				case 2:	setpixel(0,255,0,MAX-j);	break;
+				case 3:	setpixel(0,0,255,MAX-j);	break;
+				case 4:	setpixel(255,255,0,MAX-j);	break;
+				case 5:	setpixel(0,255,255,MAX-j);	break;
+				case 6:	setpixel(255,0,255,MAX-j);	break;
+				case 7:	setpixel(255,255,255,MAX-j);	break;
+				case 8:	setpixel(128,0,0,MAX-j);	break;
+				case 9:	setpixel(0,128,0,MAX-j);	break;
+				case 10:setpixel(0,0,128,MAX-j);	break;
+				case 11:setpixel(128,128,128,MAX-j);	break;
+				case 12:setpixel(255,128,0,MAX-j);	break;
+				case 13:setpixel(128,255,0,MAX-j);	break;
+				case 14:setpixel(255,0,128,MAX-j);	break;
+				case 15:setpixel(128,0,255,MAX-j);	break;
+				case 16:setpixel(0,128,255,MAX-j);	break;
+				case 17:setpixel(0,255,128,MAX-j);	break;
+				case 18:setpixel(255,64,64,MAX-j);	break;
+				case 19:setpixel(64,255,64,MAX-j);	break;
+				case 20:setpixel(64,64,255,MAX-j);	break;
+			}
 }
-
 
 void init()
 {
