@@ -287,6 +287,47 @@ void do_pictures(unsigned char *ptr, int size)
     }
 } 
 
+void do_pictures_cv(unsigned char *ptr, int size)
+{
+    drop();
+    int i, j;
+    for (i=size; i>0; i--) {
+
+        for (j=MAX/2; j>0; j--) {
+            setpixel_cv(pgm_read_byte(&(ptr[(i*MAX/2)+j])),j);
+        }
+        showstrip();
+        if (i%20 == 0)
+        {
+            if (check_button()==1) return;
+        }
+        _delay_ms(5);
+    }
+} 
+
+void do_pictures_FRGB(unsigned char *ptr, int size)
+{
+    drop();
+    int i, j;
+    for (i=0; i<size; i++) {
+
+        for (j=0; j<MAX/2; j++) {
+            ar[j] = pgm_read_byte(&(ptr[i*MAX/2 + j*3]));
+			ar[MAX - j] = pgm_read_byte(&(ptr[i*MAX/2 + j*3]));
+			ag[j] = pgm_read_byte(&(ptr[i*MAX/2 + j*3 +1]));
+			ag[MAX - j] = pgm_read_byte(&(ptr[i*MAX/2 + j*3 +1]));
+			ag[j] = pgm_read_byte(&(ptr[i*MAX/2 + j*3 +2]));
+			ag[MAX - j] = pgm_read_byte(&(ptr[i*MAX/2 + j*3 +2]));
+        }
+        showstrip();
+        if (i%20 == 0)
+        {
+            if (check_button()==1) return;
+        }
+        _delay_ms(5);
+    }
+}
+
 void colorWipe(int r, int g, int b, int wait) {
     for (int i=0; i<MAX; i++) {
         setpixel(r,g,b,i);
@@ -400,8 +441,13 @@ int main() {
             switch (eeprom_read_byte(&e_serie))
             {
             case 1:
-                //do_chess();
-                //break;
+                do_pictures_cv(fire, 257);
+                /*drop();
+				for (int i = 1; i <= 67; i++)
+					setpixel_cv(i,i);
+				showstrip();
+				for(;;) __asm("nop");*/
+				break;
             case 2: 
                 do_pictures(flame,42);  //42 pixels!
                 break;
@@ -415,9 +461,12 @@ int main() {
 				do_pictures(leaf, 38);   //38 pixels!
 				break;
 			case 6:
-				do_pictures(volks, 54);   //91 pixels!
+				do_pictures(volks, 54);   //54 pixels!
 				break;
 			case 7:
+			do_pictures_cv(levels, 81);   //81 pixels!
+				break;
+			case 8:
                 eeprom_write_byte(&e_serie,1);
                 break;
             }

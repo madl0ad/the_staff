@@ -168,7 +168,7 @@ void	cl(){ 		//system setup function
     while(!(OSC_RC32KRDY_bm));
     CLK.PSCTRL=0;//'No PreScaler in use
     
-    //OSC.XOSCCTRL = 195; //'12-16MHz, 256 Clks
+    //OSC.XOSCCTRL = 195; //'12-16MHz, 255 Clks
     OSC.PLLCTRL = 24 + 128*0;
 
 //	OSC.DFLLCTRL |= OSC_RC2MCREF_RC32K_gc;
@@ -232,6 +232,139 @@ void setpixel_c(char i, char j)
 				case 20:setpixel(64,64,255,MAX-j);	break;
 			}
 }
+
+void setpixel_cv(unsigned char i, unsigned char j)
+{
+switch (i)
+{
+case 0: setpixel(0,0,0, j); break;
+case 1: setpixel(0,0,64, j); break;
+case 2: setpixel(0,0,128, j); break;
+case 3: setpixel(0,0,192, j); break;
+case 4: setpixel(0,0,255, j); break;
+case 5: setpixel(0,64,0, j); break;
+case 6: setpixel(0,64,64, j); break;
+case 7: setpixel(0,64,128, j); break;
+case 8: setpixel(0,64,192, j); break;
+case 9: setpixel(0,64,255, j); break;
+case 10: setpixel(0,128,0, j); break;
+case 11: setpixel(0,128,64, j); break;
+case 12: setpixel(0,128,128, j); break;
+case 13: setpixel(0,128,192, j); break;
+case 14: setpixel(0,128,255, j); break;
+case 15: setpixel(0,192,0, j); break;
+case 16: setpixel(0,192,64, j); break;
+case 17: setpixel(0,192,128, j); break;
+case 18: setpixel(0,192,192, j); break;
+case 19: setpixel(0,192,255, j); break;
+case 20: setpixel(0,255,0, j); break;
+case 21: setpixel(0,255,64, j); break;
+case 22: setpixel(0,255,128, j); break;
+case 23: setpixel(0,255,192, j); break;
+case 24: setpixel(0,255,255, j); break;
+case 25: setpixel(64,0,0, j); break;
+case 26: setpixel(64,0,64, j); break;
+case 27: setpixel(64,0,128, j); break;
+case 28: setpixel(64,0,192, j); break;
+case 29: setpixel(64,0,255, j); break;
+case 30: setpixel(64,64,0, j); break;
+case 31: setpixel(64,64,64, j); break;
+case 32: setpixel(64,64,128, j); break;
+case 33: setpixel(64,64,192, j); break;
+case 34: setpixel(64,64,255, j); break;
+case 35: setpixel(64,128,0, j); break;
+case 36: setpixel(64,128,64, j); break;
+case 37: setpixel(64,128,128, j); break;
+case 38: setpixel(64,128,192, j); break;
+case 39: setpixel(64,128,255, j); break;
+case 40: setpixel(64,192,0, j); break;
+case 41: setpixel(64,192,64, j); break;
+case 42: setpixel(64,192,128, j); break;
+case 43: setpixel(64,192,192, j); break;
+case 44: setpixel(64,192,255, j); break;
+case 45: setpixel(64,255,0, j); break;
+case 46: setpixel(64,255,64, j); break;
+case 47: setpixel(64,255,128, j); break;
+case 48: setpixel(64,255,192, j); break;
+case 49: setpixel(64,255,255, j); break;
+case 50: setpixel(128,0,0, j); break;
+case 51: setpixel(128,0,64, j); break;
+case 52: setpixel(128,0,128, j); break;
+case 53: setpixel(128,0,192, j); break;
+case 54: setpixel(128,0,255, j); break;
+case 55: setpixel(128,64,0, j); break;
+case 56: setpixel(128,64,64, j); break;
+case 57: setpixel(128,64,128, j); break;
+case 58: setpixel(128,64,192, j); break;
+case 59: setpixel(128,64,255, j); break;
+case 60: setpixel(128,128,0, j); break;
+case 61: setpixel(128,128,64, j); break;
+case 62: setpixel(128,128,128, j); break;
+case 63: setpixel(128,128,192, j); break;
+case 64: setpixel(128,128,255, j); break;
+case 65: setpixel(128,192,0, j); break;
+case 66: setpixel(128,192,64, j); break;
+case 67: setpixel(128,192,128, j); break;
+case 68: setpixel(128,192,192, j); break;
+case 69: setpixel(128,192,255, j); break;
+case 70: setpixel(128,255,0, j); break;
+case 71: setpixel(128,255,64, j); break;
+case 72: setpixel(128,255,128, j); break;
+case 73: setpixel(128,255,192, j); break;
+case 74: setpixel(128,255,255, j); break;
+case 75: setpixel(192,0,0, j); break;
+case 76: setpixel(192,0,64, j); break;
+case 77: setpixel(192,0,128, j); break;
+case 78: setpixel(192,0,192, j); break;
+case 79: setpixel(192,0,255, j); break;
+case 80: setpixel(192,64,0, j); break;
+case 81: setpixel(192,64,64, j); break;
+case 82: setpixel(192,64,128, j); break;
+case 83: setpixel(192,64,192, j); break;
+case 84: setpixel(192,64,255, j); break;
+case 85: setpixel(192,128,0, j); break;
+case 86: setpixel(192,128,64, j); break;
+case 87: setpixel(192,128,128, j); break;
+case 88: setpixel(192,128,192, j); break;
+case 89: setpixel(192,128,255, j); break;
+case 90: setpixel(192,192,0, j); break;
+case 91: setpixel(192,192,64, j); break;
+case 92: setpixel(192,192,128, j); break;
+case 93: setpixel(192,192,192, j); break;
+case 94: setpixel(192,192,255, j); break;
+case 95: setpixel(192,255,0, j); break;
+case 96: setpixel(192,255,64, j); break;
+case 97: setpixel(192,255,128, j); break;
+case 98: setpixel(192,255,192, j); break;
+case 99: setpixel(192,255,255, j); break;
+case 100: setpixel(255,0,0, j); break;
+case 101: setpixel(255,0,64, j); break;
+case 102: setpixel(255,0,128, j); break;
+case 103: setpixel(255,0,192, j); break;
+case 104: setpixel(255,0,255, j); break;
+case 105: setpixel(255,64,0, j); break;
+case 106: setpixel(255,64,64, j); break;
+case 107: setpixel(255,64,128, j); break;
+case 108: setpixel(255,64,192, j); break;
+case 109: setpixel(255,64,255, j); break;
+case 110: setpixel(255,128,0, j); break;
+case 111: setpixel(255,128,64, j); break;
+case 112: setpixel(255,128,128, j); break;
+case 113: setpixel(255,128,192, j); break;
+case 114: setpixel(255,128,255, j); break;
+case 115: setpixel(255,192,0, j); break;
+case 116: setpixel(255,192,64, j); break;
+case 117: setpixel(255,192,128, j); break;
+case 118: setpixel(255,192,192, j); break;
+case 119: setpixel(255,192,255, j); break;
+case 120: setpixel(255,255,0, j); break;
+case 121: setpixel(255,255,64, j); break;
+case 122: setpixel(255,255,128, j); break;
+case 123: setpixel(255,255,192, j); break;
+case 124: setpixel(255,255,255, j); break;
+}
+}
+
 
 void init()
 {
