@@ -22,7 +22,7 @@ void write_enable()
 {
    SS_off;
    SPIMEM.DATA = 0x06;
-   while((SPIMEM.STATUS & (1<<7)) > 0);
+   //while((SPIMEM.STATUS & 1)) > 0);
    SS_on;
 }
 
@@ -30,15 +30,10 @@ void write_byte(uint32_t address, unsigned int data)
 {
    SS_off;
    SPIMEM.DATA = 0x02;
-	  while((SPIMEM.STATUS & (1<<7)) > 0);
    SPIMEM.DATA = (uint8_t)((address >> 16) & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
    SPIMEM.DATA = (uint8_t)((address >> 8) & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
    SPIMEM.DATA = (uint8_t)(address & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
    SPIMEM.DATA = data;
-      while((SPIMEM.STATUS & (1<<7)) > 0);
    SS_on;
 }
 
@@ -50,22 +45,24 @@ void write_many(uint32_t address, unsigned char *mdata, int count)
    c++;
    for (int k = 0; k <c ;k++)
    {
+	int max = (k == c-1)?count%256:256;
+	write_enable();
 	SS_off;
    SPIMEM.DATA = 0x02;
-	for (int i = 0; i < (k == (c-1)?count%256:256); i++)
-	{
-		int data = pgm_read_byte(&(mdata[(k*256 + i)]));
-		while((SPIMEM.STATUS & (1<<7)) > 0);
+   //  while((SPIMEM.STATUS & 1) > 0);//Где-то здесь
    SPIMEM.DATA = (uint8_t)((address >> 16) & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
+    //  while((SPIMEM.STATUS & 1) > 0);//Где-то здесь
    SPIMEM.DATA = (uint8_t)((address >> 8) & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
+     // while((SPIMEM.STATUS & 1) > 0);//Где-то здесь
    SPIMEM.DATA = (uint8_t)(address & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
+   //   while((SPIMEM.STATUS & 1) > 0);//Где-то здесь
+	for (int i = 0; i < max; i++)
+	{
+		int data = pgm_read_byte(&(mdata[(k*256 + i)]));	
    SPIMEM.DATA = data;
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-	  address++;
+     // while((SPIMEM.STATUS & 1) > 0); //Где-то здесь
 	}
+	address+=256;
 	SS_on;
    }
    
@@ -202,26 +199,23 @@ int main (void)
    init();
    PORTE.DIRSET = 0xB0;  // configure MOSI, SS, CLK as outputs on PORTE
 	// enable SPI master mode, CLK/64 (@32MHz=>500KHz)
-	SPIE.CTRL = SPI_ENABLE_bm | SPI_MASTER_bm | SPI_MODE_0_gc | SPI_PRESCALER_DIV128_gc;
+   SPIE.CTRL = SPI_ENABLE_bm | SPI_MASTER_bm | SPI_MODE_0_gc | SPI_PRESCALER_DIV128_gc;
    sei();
    while ((SPIE.STATUS & 0x80)>0) {   SPIE.DATA; }
-   
    write_enable();
    erase(0);
    write_enable();
    setpixel_cv(20,1);
    showstrip();
-   for(int i = 0; i < COUNT; i++)
-   {
-	   write_enable();
-	   write_many(ADDRESS + i, arr, COUNT);
-   }
+   write_enable();
+   //write_many(ADDRESS, arr, COUNT); //Виснет здесь.
+   write_byte(ADDRESS,100);
    drop();
-   setpixel_cv(100,1);
+   setpixel_cv(read_byte(ADDRESS)+5,1);
    showstrip();
    _delay_ms(1000);
    while(1)
    {
-	do_chess();
+	//do_chess();
    }
 }
