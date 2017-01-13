@@ -13,9 +13,9 @@
 #define CLOCK1	1<<CLK_PIN
 #define BUTTON_PIN	PORTE_IN
 #define BUTTON_1	5
-//#define DRRB PORTB_DIR
-//#define PORTB PORTB_OUT
-//#define PINB PORTB_IN
+#define DRRB PORTB_DIR
+#define PORTB PORTB_OUT
+#define PINB PORTB_IN
 #define PORT_MASK	((1<<BUTTON_1)+(1<<GND_PIN))
 #define INC_DELAY	10
 #define S_DELAY		100

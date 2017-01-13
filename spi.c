@@ -7,84 +7,36 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>
+//****************** SPI Definitions **************//
+#define DELAY _delay_ms(100);
+#define CHIP_SELECT   SS_on;
+#define CHIP_UNSELECT SS_off;
+//******************* SPI Definitions *************//
 
-
-void write_enable(void);
-void write_byte(uint32_t, unsigned int);
-unsigned int read_byte(uint32_t);
-
-void write_enable()
-{
-   SS_off;
-   SPIMEM.DATA = 0x06;
-   while((SPIMEM.STATUS & (1<<7)) > 0);
-   SS_on;
-}
-
-void write_byte(uint32_t address, unsigned int data)
-{
-   SS_off;
-   SPIMEM.DATA = 0x02;
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SPIMEM.DATA = (uint8_t)((address >> 16) & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SPIMEM.DATA = (uint8_t)((address >> 8) & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SPIMEM.DATA = (uint8_t)(address & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SPIMEM.DATA = data;
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SS_on;
-}
-
-void write_many(uint32_t address, unsigned char *array, int count)
-{
-	
-   for(int j = 0; j < (int)(count/256)+1;j++)
-   {
-	SS_off;
-   SPIMEM.DATA = 0x02;
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SPIMEM.DATA = (uint8_t)((address >> 16) & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SPIMEM.DATA = (uint8_t)((address >> 8) & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-   SPIMEM.DATA = (uint8_t)(address & 0xff);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-	for(int i = 0; i < 256; i++)
-	  
-	  {
-	  SPIMEM.DATA = *(array + i);
-      while((SPIMEM.STATUS & (1<<7)) > 0);
-	  }
-   SS_on;
-   address+=256;
-   }
-}
-
-void erase(uint32_t address)
-{
-   SS_off;
-   SPIMEM.DATA = 0xD8;
-   while(!(SPIMEM.STATUS & (1<<7)));
-   SS_on;
-}
-
-unsigned int read_byte(uint32_t address)
-{
-   SS_off;
-   SPIMEM.DATA = 0x03;
-   //while(!(SPIMEM.STATUS & (1<<7)));
-   SPIMEM.DATA = (uint8_t)((address >> 16) & 0xff);
-   //while(!(SPIMEM.STATUS & (1<<7)));
-   SPIMEM.DATA = (uint8_t)((address >> 8) & 0xff);
-   //while(!(SPIMEM.STATUS & (1<<7)));
-   SPIMEM.DATA = (uint8_t)(address  & 0xff);
-   //while(!(SPIMEM.STATUS & (1<<7)));
-   SS_on;
-   
-   return  SPIMEM.DATA;
-}
+//******************* Instruction Set ************//
+#define	SPI_FLASH_INS_WREN      0x06 // Write enable
+#define SPI_FLASH_INS_WRDI      0x04 // Write disable
+#define SPI_FLASH_INS_RDSR      0x05 // Read status 
+                                     //register
+#define	SPI_FLASH_INS_WRSR      0x01 // Write status 
+                                     //register
+#define SPI_FLASH_INS_READ      0x03 // Read data 
+                                     //bytes
+#define SPI_FLASH_INS_FAST_READ 0x0B // Read data 
+                                    // bytes at higher 
+                                    // speed
+#define SPI_FLASH_INS_PP        0x02 // Page program
+#define SPI_FLASH_INS_SE        0xD8 // Sector erase
+#define SPI_FLASH_INS_RES       0xAB // Release 
+                                   // from deep power-
+                                   //  down
+#define SPI_FLASH_INS_DP	0xB9 // Deep power-
+                                    // down
+#define SPI_FLASH_INS_RDID      0x9F // Read 
+                                    // identification
+#define SPI_FLASH_INS_BE        0xC7 // Bulk erase
+#define SPI_FLASH_INS_DUMMY     0
+//*************** Instruction Set ***************//
 
 unsigned char arr[11492] = {
 2, 2, 2, 2, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 3, 3, 3, 3, 3, 
@@ -257,39 +209,156 @@ unsigned char arr[11492] = {
 2, 2, 2, 2, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 3, 3, 3, 3, 3, 
 2, 2, 2, 2, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 3, 3, 3, 3, 3};
 
-void do_chess ()
-{
-	int i, j;
-	for(i=68; i>0; i--){ //подставить число столбцов!
-		
-		for (j=MAX/2; j>0; j--){
-			setpixel_c(read_byte(i*68+j),j);
-		}
-		showstrip();
-		if (i%95 == 0) 
-		{
-			if (check_button()==1) return;
-		}
-		_delay_us(50);
-	}
+
+//************** SPI Functions ********************//
+void SPI_MasterInit(void){
+
+PORTE.DIRSET = 0xB0;  // configure MOSI, SS, CLK as outputs on PORTE
+	// enable SPI master mode, CLK/64 (@32MHz=>500KHz)
+	SPIE.CTRL = SPI_ENABLE_bm | SPI_MASTER_bm | SPI_MODE_0_gc | SPI_PRESCALER_DIV128_gc;
+	
 }
 
+// SPI_MasterTransfer(0x37); // send only
+// val = SPI_MasterTransfer(0x5A); // send + receive
+// val = SPI_MasterTransfer(0x00); // receive only 
+unsigned char SPI_MasterTransfer(unsigned char data){
+
+unsigned char receivedchar = 0;
+
+SPIE.DATA = data;
+
+while(!(SPIE.STATUS&(1<<0))); // Wait for transmission  
+                            // complete
+receivedchar = SPIE.DATA;
+return(receivedchar);
+
+}
+//****************** SPI Functions ****************//
+
+//******************* SPI Memory *************//
+void WriteEnable(void){
+// NOTE: Set WEL(Write Enable Latch)
+
+SS_on; // _S Low
+
+// Send instruction code to enable write
+SPI_MasterTransfer(SPI_FLASH_INS_WREN); 
+
+SS_off; // _S High
+
+}
+
+void WriteDisable(void){
+// Note: Reset WEL(Write Enable Latch) 
+	
+CHIP_SELECT // _S Low
+
+SPI_MasterTransfer(SPI_FLASH_INS_WRDI);
+
+CHIP_UNSELECT // _S High
+
+}
+
+// WRITE IN THE MEMORY
+void SPI_WriteM25P10A(unsigned char data, unsigned long address){
+
+unsigned char Ins_Addr[4]; 
+
+Ins_Addr[0] = SPI_FLASH_INS_PP;
+Ins_Addr[1] = address>>16; // Transmit the most
+                        //   significant address byte
+Ins_Addr[2] = address>>8; // Transmit the middle 
+                      //    address byte 
+Ins_Addr[3] = address;	// Transmit the less 
+                    //    significant address byte
+
+WriteEnable();
+
+//---------- WRITE DATA ---------------------------//
+// Note:Set new data to WRSR(Write Status Register)
+
+CHIP_SELECT // _S Low
+
+// Instruction code to page program
+SPI_MasterTransfer(Ins_Addr[0]); 
+
+SPI_MasterTransfer(Ins_Addr[1]); // Send ADDRESS -  
+                                 //BYTE 1 
+SPI_MasterTransfer(Ins_Addr[2]); // Send ADDRESS - 
+                                 //BYTE 2 
+SPI_MasterTransfer(Ins_Addr[3]); // Send ADDRESS - 
+                                 //BYTE 3 
+SPI_MasterTransfer(data); // Send DATA
+
+while((SPIE.STATUS & 1<<0)>0){
+
+//USART_TransmitChar('O');	
+
+}
+
+DELAY	
+
+CHIP_UNSELECT // _S High
+//------------- WRITE DATA ------------------------//
+
+DELAY
+
+WriteDisable();		
+
+}
+
+// READ IN THE MEMORY
+unsigned char SPI_ReadM25P10A(unsigned long address){
+
+unsigned char Ins_Addr[4], byte_read; 
+
+Ins_Addr[0] = SPI_FLASH_INS_READ;
+Ins_Addr[1] = address>>16; // Transmit the most 
+  //                         significant address byte
+Ins_Addr[2] = address>>8; // Transmit the middle 
+    //                      address byte
+Ins_Addr[3] = address; // Transmit the less 
+      //                 significant address byte
+
+byte_read = 'X';
+
+DELAY
+
+//----------------- READ DATA ----------------------//
+CHIP_SELECT // _S Low
+
+SPI_MasterTransfer(Ins_Addr[0]); // Instruction code 
+                                 //to read
+SPI_MasterTransfer(Ins_Addr[1]); // Send ADDRESS - 
+                                 //BYTE 1 
+SPI_MasterTransfer(Ins_Addr[2]); // Send ADDRESS - 
+                                 //BYTE 2 
+SPI_MasterTransfer(Ins_Addr[3]); // Send ADDRESS - 
+                                 //BYTE 3 
+//--------------- READ DATA -----------------------//
+
+DELAY
+DELAY
+
+byte_read = SPI_MasterTransfer(SPI_FLASH_INS_DUMMY);
+
+CHIP_UNSELECT // _S High
+
+return(byte_read);
+
+}
+//******************* SPI Memory *************//
 int main (void)
 {
    init();
-   PORTE.DIRSET = 0xB0;  // configure MOSI, SS, CLK as outputs on PORTE
-	// enable SPI master mode, CLK/64 (@32MHz=>500KHz)
-	SPIE.CTRL = SPI_ENABLE_bm | SPI_MASTER_bm | SPI_MODE_0_gc | SPI_PRESCALER_DIV128_gc;
    sei();
-   while ((SPIE.STATUS & 0x80)>0) {   SPIE.DATA; }
-   
-   write_enable();
-   erase(0);
-   write_enable();
-   write_many(0, arr, 11492);
-   drop();
+   SPI_MasterInit();
+   SPI_WriteM25P10A(100,0);
+   setpixel_cv(SPI_ReadM25P10A(0),1);
+   showstrip();
    while(1)
    {
-	do_chess();
+	//do_chess();
    }
 }
